@@ -1,0 +1,14 @@
+.mongodb_bin/
+.mongodb_data/
+.tmp/
+node_modules/
+**/node_modules/
+.env
+**/.env
+*.env
+backend/uploads/*
+!backend/uploads/.gitkeep
+.DS_Store
+Thumbs.db
+/suvai*.png
+/kkadmin/suvai*.png
