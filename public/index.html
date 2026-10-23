@@ -6435,6 +6435,126 @@
       transform: translateY(-2px);
     }
 
+    /* Mobile Responsive for Product Detail Modal */
+    @media (max-width: 768px) {
+      .pd-modal-overlay {
+        padding: 12px;
+      }
+
+      .pd-modal-card {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 24px 16px 20px 16px;
+        max-height: 90vh;
+        border-radius: 18px;
+        box-sizing: border-box;
+      }
+
+      .pd-close-btn {
+        top: 12px;
+        right: 12px;
+        width: 36px;
+        height: 36px;
+        background: rgba(26, 10, 0, 0.08);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        z-index: 20;
+      }
+
+      .pd-main-img-wrap {
+        height: 220px;
+        padding: 12px;
+      }
+
+      .pd-thumbs-row {
+        gap: 8px;
+      }
+
+      .pd-thumb-btn {
+        width: 52px;
+        height: 52px;
+      }
+
+      .pd-title {
+        font-size: 1.4rem;
+        margin-bottom: 8px;
+        line-height: 1.25;
+        padding-right: 32px;
+      }
+
+      .pd-short-desc {
+        font-size: 0.88rem;
+        margin-bottom: 10px;
+      }
+
+      .pd-full-desc {
+        font-size: 0.84rem;
+        line-height: 1.55;
+        margin-bottom: 14px;
+      }
+
+      .pd-price-row {
+        margin-bottom: 14px;
+        gap: 10px;
+      }
+
+      .pd-price-curr {
+        font-size: 1.6rem;
+      }
+
+      .pd-price-mrp {
+        font-size: 1.05rem;
+      }
+
+      .pd-meta-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 10px 12px;
+        margin-bottom: 16px;
+        font-size: 0.8rem;
+      }
+
+      .pd-atc-btn {
+        padding: 13px 18px;
+        font-size: 0.88rem;
+        letter-spacing: 0.5px;
+      }
+
+      .pd-wishlist-btn {
+        width: 46px;
+        height: 46px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .pd-modal-overlay {
+        padding: 8px;
+      }
+
+      .pd-modal-card {
+        padding: 18px 12px 18px 12px;
+        gap: 12px;
+        border-radius: 16px;
+        max-height: 92vh;
+      }
+
+      .pd-main-img-wrap {
+        height: 180px;
+      }
+
+      .pd-title {
+        font-size: 1.25rem;
+      }
+
+      .pd-meta-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+    }
+
     .bento-item {
       cursor: pointer;
     }
@@ -8730,7 +8850,12 @@
     function resolveCustomerImageUrl(img) {
       if (!img) return 'assets/suvai1.png';
       if (img.startsWith('data:image/') || img.startsWith('blob:')) return img;
-      if (img.startsWith('http://') || img.startsWith('https://')) return img;
+      if (img.startsWith('http://') || img.startsWith('https://')) {
+        if (/^https?:\/\/(localhost|127\.0\.0\.1):(?!5000\b)\d+/i.test(img)) {
+          return 'assets/suvai1.png';
+        }
+        return img;
+      }
       if (img.startsWith('/uploads/')) return getBackendUrl(img);
       if (img.startsWith('uploads/')) return getBackendUrl('/' + img);
       if (img.startsWith('/assets/')) return img.substring(1);
@@ -8924,9 +9049,10 @@
       const ratingEl = document.getElementById('pd-modal-rating');
       const btnPriceEl = document.getElementById('pd-modal-btn-price');
 
-      const mainSrc = p.img;
+      const mainSrc = resolveCustomerImageUrl(p.img || p.image);
       if (mainImg) {
         mainImg.src = mainSrc;
+        mainImg.onerror = function () { this.src = 'assets/suvai1.png'; };
         mainImg.alt = (p.name || 'Hi Suvai Product') + ' - Healthy Health Mix';
       }
       if (tagEl) tagEl.textContent = '✦ ' + (p.tag || 'Traditional Choice');
@@ -8975,18 +9101,25 @@
       // Thumbnails
       if (thumbsContainer) {
         thumbsContainer.innerHTML = '';
-        const imagesList = p.images && p.images.length > 0 ? p.images : [p.img];
-        imagesList.forEach((imgSrc, idx) => {
-          const thumbBtn = document.createElement('button');
-          thumbBtn.className = `pd-thumb-btn ${idx === 0 ? 'active' : ''}`;
-          thumbBtn.innerHTML = `<img src="${escapeHtml(imgSrc)}" alt="Thumbnail ${idx + 1}" />`;
-          thumbBtn.onclick = () => {
-            document.querySelectorAll('.pd-thumb-btn').forEach(b => b.classList.remove('active'));
-            thumbBtn.classList.add('active');
-            if (mainImg) mainImg.src = imgSrc;
-          };
-          thumbsContainer.appendChild(thumbBtn);
-        });
+        const rawImages = (p.images && p.images.length > 0) ? p.images : (p.img ? [p.img] : []);
+        const imagesList = rawImages.map(img => resolveCustomerImageUrl(img)).filter(Boolean);
+        if (imagesList.length > 1) {
+          thumbsContainer.style.display = 'flex';
+          imagesList.forEach((imgSrc, idx) => {
+            const thumbBtn = document.createElement('button');
+            thumbBtn.type = 'button';
+            thumbBtn.className = `pd-thumb-btn ${idx === 0 ? 'active' : ''}`;
+            thumbBtn.innerHTML = `<img src="${escapeHtml(imgSrc)}" onerror="this.src='assets/suvai1.png'" alt="Thumbnail ${idx + 1}" />`;
+            thumbBtn.onclick = () => {
+              document.querySelectorAll('.pd-thumb-btn').forEach(b => b.classList.remove('active'));
+              thumbBtn.classList.add('active');
+              if (mainImg) mainImg.src = imgSrc;
+            };
+            thumbsContainer.appendChild(thumbBtn);
+          });
+        } else {
+          thumbsContainer.style.display = 'none';
+        }
       }
 
       // Modal Wishlist Button state
@@ -9433,6 +9566,7 @@
         const nameSafe = escapeHtml(p.name);
         const tagSafe = escapeHtml(p.tag || 'Traditional Food');
         const imgSafe = escapeHtml(p.img || 'assets/suvai1.png');
+        const div = document.createElement('div');
         div.className = 'cart-item'; div.id = 'ci-' + idSafe;
         div.innerHTML = `<div class="cart-item-img"><img src="${imgSafe}" alt="${nameSafe}"/></div>
     <div class="cart-item-body">
@@ -10252,7 +10386,9 @@
             currency: payData.currency || 'INR',
             name: 'Hi Suvai Traditional Foods',
             description: `Order #${orderId}`,
-            image: 'assets/logo.png',
+            image: (window.location.protocol === 'https:' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1'))
+              ? window.location.origin + '/assets/logo.png'
+              : 'https://hisuvai.com/assets/logo.png',
             order_id: payData.razorpayOrderId,
             prefill: {
               name: fullName,
