@@ -1,0 +1,11 @@
+# Serves kkadmin static assets and dashboard
+/kkadmin/*  /kkadmin/index.html  200
+/kkadmin    /kkadmin/index.html  200
+
+# Proxy backend API and uploads requests to backend server
+# IMPORTANT: Replace https://api.YOURDOMAIN.com with your deployed production backend API URL (e.g. https://api.hisuvai.com)
+/api/*      https://api.YOURDOMAIN.com/api/:splat      200
+/uploads/*  https://api.YOURDOMAIN.com/uploads/:splat  200
+
+# Single Page App routing fallback for frontend
+/*  /index.html  200

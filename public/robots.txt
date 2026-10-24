@@ -1,0 +1,10 @@
+# Robots.txt for Hi Suvai - hisuvai.com
+User-agent: *
+Allow: /
+Disallow: /kkadmin/
+Disallow: /backend/
+Disallow: /api/
+Disallow: /uploads/
+
+# Sitemap location
+Sitemap: https://hisuvai.com/sitemap.xml
